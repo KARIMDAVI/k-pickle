@@ -10,8 +10,7 @@ background clips as you scroll.
 
 ## Live demo
 
-_Add your deployed URL here (GitHub Pages, Netlify, Vercel — all work with zero config since
-this is a static site)._
+**[karimdavi.github.io/k-pickle](https://karimdavi.github.io/k-pickle/)**
 
 ## Stack
 
