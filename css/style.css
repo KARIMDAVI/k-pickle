@@ -1,0 +1,486 @@
+:root {
+  --night: #0d0f0a;
+  --glass: #1f2b1a;
+  --brine: #6b8e4e;
+  --mustard: #d4a72c;
+  --cream: #e8dcc4;
+  --cream-soft: rgba(232, 220, 196, 0.74);
+  /* 0.42 measured 3.3:1 over the carded panel backdrop — below WCAG AA (4.5:1) for the small
+     uppercase type that uses it (.facts, .signoff, .counter__unit, .cue, .rail__label,
+     .brandbar__place). The binding case is the jar beat, whose footage is a bright green
+     wall: 0.58 still only reached 4.48:1 there. 0.62 clears AA on every beat with margin and
+     is still visibly a step quieter than --cream-soft, which is the point of the token. */
+  --cream-faint: rgba(232, 220, 196, 0.62);
+  --hair: rgba(232, 220, 196, 0.16);
+  --panel-bg: rgba(10, 13, 9, 0.52);
+  --beat-scroll: 170vh;
+
+  /* Horizontal band the section rail owns. The rail paints *behind* .panels, so a
+     right-aligned panel wide enough to reach into this band doesn't look like a collision —
+     the label just smears through the card's backdrop-blur as a smudge across body text.
+     The column is the widest row the rail can produce: 40px active dot + 12px gap + 80px
+     for "THE GARDEN" + 4px button padding. Right-aligned panels clear it explicitly. */
+  --rail-inset: clamp(18px, 3vw, 40px);
+  --rail-column: 136px;
+  --rail-clear: calc(var(--rail-inset) + var(--rail-column) + 24px);
+  --display: "Bitter", "Georgia", "Times New Roman", serif;
+  --body: "Lora", "Georgia", "Times New Roman", serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--night);
+  color: var(--cream);
+}
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: var(--body);
+  font-size: 17px;
+  line-height: 1.7;
+  overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: var(--mustard); color: var(--night); }
+
+/* ---------- stage ---------- */
+
+.stage {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+#scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.bg-video {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.bg-video canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: saturate(0.82) contrast(1.05) brightness(0.62);
+  opacity: 0;
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgba(13, 15, 10, 0.72) 0%, rgba(13, 15, 10, 0) 26%, rgba(13, 15, 10, 0) 62%, rgba(13, 15, 10, 0.82) 100%),
+    radial-gradient(120% 88% at 50% 46%, rgba(13, 15, 10, 0) 42%, rgba(13, 15, 10, 0.66) 100%);
+}
+
+/* ---------- scroll track ---------- */
+
+.track { position: relative; z-index: 1; }
+.track__beat { height: var(--beat-scroll); }
+
+/* ---------- brand bar ---------- */
+
+.brandbar {
+  position: absolute;
+  top: clamp(18px, 3vw, 34px);
+  left: clamp(20px, 4vw, 54px);
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 700ms ease, transform 700ms ease;
+}
+
+.brandbar.is-visible { opacity: 1; transform: none; }
+
+.brandbar__mark {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.12rem;
+  letter-spacing: -0.01em;
+}
+
+.brandbar__mark em { font-style: normal; color: var(--mustard); }
+
+.brandbar__place {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 0.62rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--cream-faint);
+}
+
+/* ---------- section rail ---------- */
+
+.rail {
+  position: absolute;
+  top: 50%;
+  right: var(--rail-inset);
+  transform: translateY(-50%);
+  pointer-events: auto;
+}
+
+.rail ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+
+.rail button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 6px 2px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  color: var(--cream-faint);
+  flex-direction: row-reverse;
+}
+
+.rail__dot {
+  width: 22px;
+  height: 1px;
+  background: var(--cream-faint);
+  transition: width 420ms cubic-bezier(0.22, 1, 0.36, 1), background 420ms ease;
+}
+
+.rail__label {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateX(6px);
+  transition: opacity 340ms ease, transform 340ms ease;
+  white-space: nowrap;
+}
+
+.rail button:hover .rail__label,
+.rail button.is-active .rail__label { opacity: 1; transform: none; }
+.rail button:hover .rail__dot { background: var(--cream); }
+
+.rail button.is-active .rail__dot { width: 40px; background: var(--mustard); }
+.rail button.is-active { color: var(--mustard); }
+
+/* ---------- panels ---------- */
+
+.panels { position: absolute; inset: 0; }
+
+.panel {
+  position: absolute;
+  top: 50%;
+  width: min(46ch, 42vw);
+  padding: clamp(26px, 2.4vw, 38px) clamp(24px, 2.4vw, 38px);
+  background: var(--panel-bg);
+  backdrop-filter: blur(16px) saturate(1.15);
+  -webkit-backdrop-filter: blur(16px) saturate(1.15);
+  border: 1px solid var(--hair);
+  border-radius: 3px;
+  opacity: 0;
+  transform: translateY(-50%);
+  will-change: opacity, transform;
+  box-shadow: 0 30px 70px -40px rgba(0, 0, 0, 0.9);
+}
+
+.panel::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: clamp(24px, 2.4vw, 38px);
+  width: 46px;
+  height: 2px;
+  background: var(--mustard);
+}
+
+.panel[data-align="left"] { left: clamp(20px, 6vw, 96px); }
+
+/* The 6vw inset alone put this panel's right edge ~77px inside the rail's column at 1440px
+   and ~94px inside it by the 901px breakpoint. max() keeps the original inset wherever it is
+   already generous enough and falls back to the rail's own clearance everywhere else. */
+.panel[data-align="right"] { right: max(clamp(20px, 6vw, 96px), var(--rail-clear)); }
+
+.panel[data-align="center"] {
+  left: 50%;
+  width: min(58ch, 76vw);
+  /* Deep bottom padding is load bearing, not decoration. A closest-side ellipse reaches full
+     transparency exactly at the edges of its own box, so whatever sits last in one of these
+     scrim-only panels sits on bare footage — the Taste sign-off measured 2.5–3.2:1 and the
+     Hero cue the same. The gradient cannot be pushed outside the box without being clipped
+     mid-fade into a visible rectangle, so the box is grown downward instead: the fade now
+     completes across empty padding and the closing line sits over the scrim's dark middle. */
+  padding: clamp(30px, 4vw, 64px) clamp(24px, 5vw, 80px) clamp(76px, 13vw, 196px);
+  text-align: center;
+  /* No card here — the 3D subject sits directly behind, so legibility comes from a soft
+     radial scrim that fades out before it reads as a box. */
+  background: radial-gradient(closest-side,
+    rgba(8, 10, 7, 0.92) 0%,
+    rgba(8, 10, 7, 0.88) 46%,
+    rgba(8, 10, 7, 0.62) 74%,
+    rgba(8, 10, 7, 0) 100%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 0;
+  box-shadow: none;
+  transform: translate(-50%, -50%);
+  text-shadow: 0 2px 22px rgba(5, 7, 4, 0.9);
+}
+
+.panel--hero { top: 42%; }
+
+.panel[data-align="center"]::before { left: 50%; transform: translateX(-50%); }
+
+.panel h2 {
+  margin: 0 0 0.6em;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(1.9rem, 3.4vw, 3rem);
+  line-height: 1.04;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+
+.panel p { margin: 0 0 1em; color: var(--cream-soft); }
+.panel p:last-child { margin-bottom: 0; }
+
+.eyebrow {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 0.66rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--mustard) !important;
+  margin: 0 0 1.4em !important;
+}
+
+.facts {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin: 1.6em 0 0;
+  padding: 1.2em 0 0;
+  border-top: 1px solid var(--hair);
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cream-faint);
+}
+
+.facts li { position: relative; padding-left: 14px; }
+
+.facts li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 5px;
+  height: 5px;
+  background: var(--brine);
+  border-radius: 50%;
+}
+
+.counter {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin: 1.4em 0 0 !important;
+  padding-top: 1.2em;
+  border-top: 1px solid var(--hair);
+}
+
+.counter span[data-count-from] {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 3.1rem;
+  line-height: 1;
+  color: var(--mustard);
+  font-variant-numeric: tabular-nums;
+}
+
+.counter__unit {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 0.66rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--cream-faint);
+}
+
+/* ---------- hero ---------- */
+
+.wordmark {
+  margin: 0 0 0.34em;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(3.2rem, 12vw, 8.5rem);
+  line-height: 0.88;
+  letter-spacing: -0.045em;
+}
+
+.wordmark em { font-style: normal; color: var(--mustard); }
+
+.lede {
+  margin: 0 auto !important;
+  max-width: 34ch;
+  font-size: clamp(1rem, 1.5vw, 1.24rem);
+  font-style: italic;
+  color: var(--cream-soft);
+}
+
+.cue {
+  margin-top: 3.2em !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 0.62rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--cream-faint) !important;
+}
+
+.cue__line {
+  width: 1px;
+  height: 34px;
+  background: linear-gradient(to bottom, transparent, var(--mustard));
+  animation: drip 2.6s ease-in-out infinite;
+  transform-origin: top;
+}
+
+@keyframes drip {
+  0%, 100% { transform: scaleY(0.35); opacity: 0.4; }
+  50% { transform: scaleY(1); opacity: 1; }
+}
+
+/* ---------- cta ---------- */
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  margin: 2.2em 0 0;
+  pointer-events: auto;
+}
+
+.btn {
+  display: inline-block;
+  padding: 15px 30px;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1), background 320ms ease, color 320ms ease;
+}
+
+.btn--primary { background: var(--mustard); color: var(--night); }
+.btn--primary:hover { transform: translateY(-3px); background: var(--cream); }
+.btn--ghost { border-color: var(--hair); color: var(--cream); }
+.btn--ghost:hover { transform: translateY(-3px); border-color: var(--mustard); color: var(--mustard); }
+
+.signoff {
+  margin-top: 2.6em !important;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--cream-faint) !important;
+}
+
+/* ---------- fallbacks ---------- */
+
+:is(.no-js, .no-webgl) :is(.stage, .panels) { position: static; }
+
+:is(.no-js, .no-webgl) .panel {
+  position: relative;
+  inset: auto;
+  left: auto;
+  right: auto;
+  top: auto;
+  width: min(56ch, 90vw);
+  margin: 12vh auto;
+  opacity: 1;
+  transform: none;
+}
+
+:is(.no-js, .no-webgl) :is(.track, #scene, .vignette, .rail) { display: none; }
+
+.no-webgl {
+  background:
+    radial-gradient(90% 60% at 50% 0%, rgba(31, 43, 26, 0.9) 0%, rgba(13, 15, 10, 1) 70%),
+    var(--night);
+}
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 900px) {
+  body { font-size: 16px; }
+
+  .rail { display: none; }
+
+  .panel,
+  .panel[data-align="left"],
+  .panel[data-align="right"] {
+    top: auto;
+    bottom: max(20px, env(safe-area-inset-bottom));
+    left: 14px;
+    right: 14px;
+    width: auto;
+    transform: none;
+    max-height: 66vh;
+    overflow-y: auto;
+    /* .stage is pointer-events:none and only .rail/.actions opted back in, so the panel
+       inherited none and this overflow rule was inert — a capped, unscrollable box that
+       silently clipped its tail on short viewports. Nothing sits behind a panel that needs
+       the pointer, so taking events here costs nothing and makes the cap survivable.
+       Deliberately no overscroll-behavior: contain — a panel that is not actually
+       overflowing must still hand the gesture to the page. */
+    pointer-events: auto;
+  }
+
+  .panel[data-align="center"] {
+    top: 50%;
+    bottom: auto;
+    left: 14px;
+    right: 14px;
+    width: auto;
+    transform: translateY(-50%);
+  }
+
+  .panel h2 { font-size: clamp(1.6rem, 7vw, 2.2rem); }
+  .counter span[data-count-from] { font-size: 2.4rem; }
+  .facts { font-size: 0.62rem; gap: 6px 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cue__line { animation: none; opacity: 0.8; }
+  .btn:hover { transform: none; }
+  html { scroll-behavior: auto; }
+}

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>K-Pickle — Small Batch, Patient Brine</title>
+<meta name="description" content="K-Pickle is a small-batch picklery in Hollis Bend. Cucumbers picked at dawn, white vinegar, garlic, dill, whole black peppercorns, kosher salt, and a finish of lime juice — five days in the brine.">
+<meta name="theme-color" content="#0d0f0a">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;800&family=Lora:ital,wght@0,400;0,500;1,400&display=swap">
+<link rel="stylesheet" href="css/style.css">
+
+<script>document.documentElement.classList.remove('no-js');</script>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.169.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.169.0/examples/jsm/",
+    "lenis": "https://unpkg.com/lenis@1.3.26/dist/lenis.mjs"
+  }
+}
+</script>
+
+<!-- Classic builds: GSAP ships its plugins as UMD on CDN, and classic scripts always run
+     before deferred module scripts, so window.gsap/ScrollTrigger are ready for js/main.js. -->
+<script src="https://unpkg.com/gsap@3.15.0/dist/gsap.min.js"></script>
+<script src="https://unpkg.com/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
+</head>
+<body>
+
+<div class="stage">
+  <canvas id="scene" aria-hidden="true"></canvas>
+
+  <!--
+    BACKGROUND FRAME-SEQUENCE LAYER — one optional scroll-scrubbed clip per story beat.
+    The three.js scene stands on its own; main.js reads media/manifest.json to see which
+    beats have a frame sequence at media/frames/{beat}/001.jpg..060.jpg, and paints the
+    frame matching that beat's scroll position onto a <canvas> — see main.js for why a
+    real <video> element isn't used here, and for how one beat's canvas dissolves into the
+    next. Canvas order in here is beat order and that dissolve depends on it, which is why
+    main.js creates them all up front rather than as each beat is reached. A beat with no
+    sequence is where the three.js scene behind this layer shows through.
+  -->
+  <div class="bg-video" aria-hidden="true"></div>
+
+  <div class="vignette" aria-hidden="true"></div>
+
+  <header class="brandbar" data-brandbar>
+    <span class="brandbar__mark">K<em>-Pickle</em></span>
+    <span class="brandbar__place">Hollis Bend</span>
+  </header>
+
+  <nav class="rail" aria-label="Story sections">
+    <ol>
+      <li><button type="button" data-goto="0"><span class="rail__dot"></span><span class="rail__label">Hero</span></button></li>
+      <li><button type="button" data-goto="1"><span class="rail__dot"></span><span class="rail__label">The Garden</span></button></li>
+      <li><button type="button" data-goto="2"><span class="rail__dot"></span><span class="rail__label">The Brine</span></button></li>
+      <li><button type="button" data-goto="3"><span class="rail__dot"></span><span class="rail__label">The Crock</span></button></li>
+      <li><button type="button" data-goto="4"><span class="rail__dot"></span><span class="rail__label">The Jar</span></button></li>
+      <li><button type="button" data-goto="5"><span class="rail__dot"></span><span class="rail__label">The Taste</span></button></li>
+    </ol>
+  </nav>
+
+  <main class="panels">
+
+    <article class="panel panel--hero" data-panel="hero" data-align="center">
+      <p class="eyebrow">Since 1962 · Small batch</p>
+      <h1 class="wordmark"><span>K</span><em>-Pickle</em></h1>
+      <p class="lede">Cucumbers, salt, and time. Nothing in this jar that K's grandmother wouldn't recognise.</p>
+      <p class="cue"><span class="cue__line"></span>Follow the brine</p>
+    </article>
+
+    <article class="panel" data-panel="garden" data-align="left">
+      <p class="eyebrow">One — The Garden</p>
+      <h2>It starts in the dirt.</h2>
+      <p>Four acres of river-bottom loam on the slow side of Hollis Bend. We cut Kirbys at first light, while the skins still squeak and the vines are cold to the hand.</p>
+      <p>Nothing we grow rides in a truck for more than an hour. A cucumber picked yesterday is already a different vegetable, and it will taste like one.</p>
+      <ul class="facts">
+        <li>Picked at dawn</li>
+        <li>In brine by noon</li>
+        <li>Four acres, no more</li>
+      </ul>
+    </article>
+
+    <article class="panel" data-panel="brine" data-align="right">
+      <p class="eyebrow">Two — The Brine</p>
+      <h2>Nothing in it you can't name.</h2>
+      <p>White vinegar and well water, cut bright with fresh lime juice. Garlic crushed under the flat of a knife, whole black peppercorns, a fistful of dill, and kosher salt — the only cure this brine needs.</p>
+      <p>K's grandmother wrote the ratio on the back of a seed catalogue in 1962. We have never found a reason to improve it.</p>
+      <ul class="facts">
+        <li>White vinegar &amp; lime juice</li>
+        <li>Certified kosher</li>
+        <li>Dill &amp; black pepper</li>
+      </ul>
+    </article>
+
+    <article class="panel" data-panel="crock" data-align="left">
+      <p class="eyebrow">Three — The Crock</p>
+      <h2>Then we leave it alone.</h2>
+      <p>Packed into stoneware crocks, cucumbers going in whole, the brine poured over cold and the lid set on top.</p>
+      <p>Five days is all it takes for the vinegar and lime to work all the way through — long enough for the garlic and dill to settle in, not so long the snap goes soft.</p>
+      <p class="counter"><span data-count-from="1" data-count-to="5" data-count-pad="2">01</span> <span class="counter__unit">days in the brine</span></p>
+    </article>
+
+    <article class="panel" data-panel="jar" data-align="right">
+      <p class="eyebrow">Four — The Jar</p>
+      <h2>Packed by hand, one jar at a time.</h2>
+      <p>Cold and upright, whole cucumbers set against the glass so the brine can still move between them. Never pasteurised — heat would buy us a longer shelf life and cost us the snap.</p>
+      <p>Every lid goes on by hand. Every label is dated by the person who filled it. If a jar isn't right, it doesn't leave the room.</p>
+      <ul class="facts">
+        <li>Hand-packed</li>
+        <li>Dated &amp; signed</li>
+        <li>Kept cold, always</li>
+      </ul>
+    </article>
+
+    <article class="panel panel--cta" data-panel="taste" data-align="center">
+      <p class="eyebrow">Five — The First Bite</p>
+      <h2>Open it cold.</h2>
+      <p>The snap comes first, then the bright hit of lime, then the slow heat of the garlic somewhere behind your teeth. Eat them standing at the sink, the way K does.</p>
+      <p>And keep the brine. It is the best thing in the jar and everybody pours it down the drain.</p>
+      <div class="actions">
+        <a class="btn btn--primary" href="#order">Order a case</a>
+        <a class="btn btn--ghost" href="#stockists">Find a stockist</a>
+      </div>
+      <p class="signoff">K-Pickle · Hollis Bend · Small batch, patient brine, no apologies.</p>
+    </article>
+
+  </main>
+</div>
+
+<div class="track" aria-hidden="true">
+  <div class="track__beat"></div>
+  <div class="track__beat"></div>
+  <div class="track__beat"></div>
+  <div class="track__beat"></div>
+  <div class="track__beat"></div>
+  <div class="track__beat"></div>
+</div>
+
+<!-- If any static import in main.js's module graph fails to resolve (e.g. unpkg is down or
+     blocked), the module never executes at all — boot() never runs, and the CSS default of
+     `.panel { opacity: 0 }` would leave a blank page with no fallback. onerror fires for
+     exactly that case (module graph load/parse failure) and applies the same fallback class
+     main.js's own degrade() uses. -->
+<script type="module" src="js/main.js" onerror="document.documentElement.classList.add('no-webgl')"></script>
+</body>
+</html>
